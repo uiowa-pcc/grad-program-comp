@@ -597,9 +597,9 @@
     return '<?xml version="1.0" encoding="UTF-8"?>'+
       '<xml xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">'+
       '<v:shapetype id="_x0000_t202" coordsize="21600,21600" o:spt="202" path="m,l,21600r21600,l21600,xe"><v:stroke joinstyle="miter"/><v:path gradientshapeok="t" o:connecttype="none"/></v:shapetype>'+
-      noteCells.map((note,i)=>'<v:shape id="_x0000_s'+(1025+i)+'" type="#_x0000_t202" style="position:absolute;margin-left:59.25pt;margin-top:15pt;width:250pt;height:92pt;visibility:hidden;z-index:'+(i+1)+';" fillcolor="#ffffe1" o:insetmode="auto">'+
-        '<v:fill color2="#ffffe1"/><v:shadow on="t" color="black" obscured="t"/><v:path o:connecttype="none"/><v:textbox style="mso-direction-alt:auto"><div style="text-align:left"/></v:textbox>'+
-        '<x:ClientData ObjectType="Note"><x:MoveWithCells/><x:SizeWithCells/><x:Anchor>0, 15, '+note.row+', 2, 4, 15, '+(note.row+5)+', 2</x:Anchor><x:AutoFill>False</x:AutoFill><x:Row>'+note.row+'</x:Row><x:Column>0</x:Column></x:ClientData></v:shape>').join('')+
+      noteCells.map((note,i)=>'<v:shape id="_x0000_s'+(1025+i)+'" type="#_x0000_t202" style="position:absolute;margin-left:0;margin-top:0;width:208pt;height:80pt;visibility:hidden;z-index:'+(i+1)+';" fillcolor="#ffffff" strokecolor="#bfc4cb" o:insetmode="auto">'+
+        '<v:fill color2="#ffffff"/><v:stroke color="#bfc4cb"/><v:path o:connecttype="none"/><v:textbox style="mso-direction-alt:auto"><div style="text-align:left"/></v:textbox>'+
+        '<x:ClientData ObjectType="Note"><x:MoveWithCells/><x:SizeWithCells/><x:Anchor>1, 0, '+note.row+', 0, 2, 20, '+(note.row+1)+', 20</x:Anchor><x:AutoFill>False</x:AutoFill><x:Row>'+note.row+'</x:Row><x:Column>0</x:Column></x:ClientData></v:shape>').join('')+
       '</xml>';
   }
   const stylesXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
