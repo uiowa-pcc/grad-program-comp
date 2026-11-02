@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#151515">
+<meta name="description" content="Choose what matters to you and create an editable graduate program comparison spreadsheet.">
+<title>Graduate Program Comparison</title>
+<style>
+  :root { --ink:#191919; --muted:#5c6067; --gold:#ffcd00; --line:#dfe2e6; --pale:#fff8dc; --panel:#fff; --blue:#edf4ff; --page:#f6f7f9; --radius:16px; font-family:Aptos, "Segoe UI", Arial, sans-serif; color:var(--ink); }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--page); font-size:15px; line-height:1.45; }
+  button,input,textarea { font:inherit; }
+  button { cursor:pointer; }
+  a { color:#155a83; }
+  :focus-visible { outline:3px solid #b78b00; outline-offset:3px; }
+  .brandbar { background:#181818; color:#fff; border-bottom:5px solid var(--gold); }
+  .brand-inner { max-width:1240px; padding:13px 26px; margin:auto; display:flex; align-items:center; justify-content:space-between; gap:20px; }
+  .wordmark { font-weight:850; letter-spacing:-.04em; font-size:24px; color:var(--gold); line-height:1; }
+  .brand-meta { font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:#e8e8e8; font-weight:650; }
+  .shell { max-width:1240px; margin:auto; padding:37px 26px 70px; }
+  .intro { display:flex; justify-content:space-between; align-items:end; gap:24px; margin-bottom:28px; }
+  .eyebrow { color:#64500b; font-weight:800; letter-spacing:.09em; font-size:12px; text-transform:uppercase; margin-bottom:9px; }
+  h1 { letter-spacing:-.045em; font-size:clamp(30px,3.2vw,44px); line-height:1.07; margin:0 0 10px; font-weight:800; }
+  .intro p { color:var(--muted); max-width:650px; margin:0; font-size:16px; }
+  .summary { border:1px solid var(--line); background:#fff; border-radius:13px; padding:14px 20px; min-width:190px; box-shadow:0 4px 12px #20253106; }
+  .summary strong { font-size:25px; letter-spacing:-.04em; }
+  .summary span { color:var(--muted); font-size:12px; display:block; }
+  .columns { display:grid; grid-template-columns:minmax(320px,390px) minmax(0,1fr); gap:22px; align-items:start; }
+  .left-col { display:grid; gap:17px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:var(--radius); box-shadow:0 5px 18px #262a3307; overflow:hidden; }
+  .card-head { padding:20px 22px 16px; }
+  .section-label { display:flex; gap:11px; align-items:center; }
+  .step { display:grid; place-items:center; flex:none; width:27px; height:27px; border-radius:8px; background:var(--ink); color:var(--gold); font-size:12px; font-weight:800; }
+  h2 { font-size:18px; line-height:1.2; letter-spacing:-.025em; margin:0; }
+  .small { color:var(--muted); font-size:13px; }
+  .card-head .small { margin:8px 0 0 38px; }
+  .choice-tools { padding:0 22px 16px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:9px; align-items:center; }
+  .link-button { border:0; padding:2px 0; color:#454545; background:none; font-size:12px; font-weight:700; text-decoration:underline; text-underline-offset:3px; }
+  .count-chip { border-radius:100px; padding:5px 9px; background:#fff5c7; color:#4e3e00; font-weight:750; font-size:12px; }
+  details.category { border-top:1px solid #eceef0; }
+  details.category summary { cursor:pointer; padding:13px 22px; list-style:none; display:flex; align-items:center; justify-content:space-between; gap:12px; font-weight:750; }
+  details.category summary::-webkit-details-marker { display:none; }
+  .category-label { display:flex; align-items:center; gap:9px; }
+  .chev { color:#777; transition:transform .18s ease; font-weight:600; }
+  details[open] .chev { transform:rotate(90deg); }
+  .cat-count { font-size:11px; font-weight:700; color:#636363; background:#f2f3f4; border-radius:50px; padding:3px 7px; }
+  .checks { padding:1px 17px 13px 22px; display:grid; gap:4px; }
+  .criterion { display:flex; gap:10px; align-items:start; padding:9px 8px; border-radius:10px; cursor:pointer; border:1px solid transparent; }
+  .criterion:hover { background:#f8f9fa; }
+  .criterion:has(input:checked) { background:#fffae9; border-color:#f7e9b3; }
+  .criterion input { accent-color:#1b1b1b; width:17px; height:17px; margin:1px 0 0; flex:none; }
+  .criterion strong { display:block; font-size:13px; font-weight:700; }
+  .criterion em { color:var(--muted); font-style:normal; font-size:11px; display:block; margin-top:2px; }
+  .custom-wrap { border-top:1px solid var(--line); padding:17px 22px 20px; }
+  .custom-wrap label { display:block; font-weight:750; font-size:13px; margin-bottom:9px; }
+  .add-criterion { display:flex; gap:7px; }
+  input[type=text],input[type=url] { color:var(--ink); border:1px solid #bfc5cd; border-radius:9px; padding:11px 12px; background:#fff; min-width:0; width:100%; }
+  input::placeholder,textarea::placeholder { color:#8b9099; }
+  .mini-button { border-radius:9px; border:1px solid #222; background:#222; color:white; padding:10px 14px; font-size:13px; font-weight:750; white-space:nowrap; }
+  .custom-list { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  .custom-chip { display:inline-flex; align-items:center; gap:6px; border:1px solid #e9cf67; border-radius:99px; background:#fff9dc; padding:5px 8px 5px 11px; font-size:12px; font-weight:700; }
+  .custom-chip button { border:0; background:none; padding:0 2px; font-size:16px; line-height:1; color:#675400; }
+  .programs { padding:0 22px 19px; }
+  .program-row { background:#f8f9fa; padding:11px; border-radius:11px; border:1px solid #e6e8eb; margin-bottom:10px; }
+  .program-title { font-size:11px; font-weight:800; color:#5a6069; letter-spacing:.03em; display:flex; align-items:center; justify-content:space-between; margin-bottom:7px; }
+  .program-row input { padding:9px 10px; font-size:13px; border-radius:7px; }
+  .program-row input + input { margin-top:7px; }
+  .remove-program { border:0; background:none; color:#7b3733; padding:0; font-size:11px; font-weight:800; }
+  .add-program { border:1px dashed #9ca2aa; background:#fff; color:#222; border-radius:9px; padding:10px 13px; font-weight:750; width:100%; font-size:13px; }
+  .add-program:disabled { color:#8f9295; border-color:#d9dde0; cursor:not-allowed; }
+  .note { display:block; padding:12px 22px 18px; border-top:1px solid #eeeff1; color:#666; font-size:12px; }
+  .compare-card { position:sticky; top:16px; min-width:0; }
+  .compare-head { padding:21px 22px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .compare-head h2 { font-size:20px; }
+  .compare-head p { margin:4px 0 0; }
+  .download { background:var(--gold); color:#161616; border:1px solid #d9ae00; box-shadow:0 2px 0 #b28c00; padding:12px 16px; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight:850; font-size:14px; white-space:nowrap; }
+  .download:hover { background:#ffe067; }
+  .download:disabled { opacity:.55; cursor:not-allowed; box-shadow:none; }
+  .table-zone { overflow:auto; max-height:min(67vh,780px); }
+  table { width:100%; border-collapse:separate; border-spacing:0; min-width:535px; }
+  th,td { border-right:1px solid #e7eaee; border-bottom:1px solid #e7eaee; vertical-align:top; }
+  th:last-child, td:last-child { border-right:0; }
+  thead th { background:#f3f4f6; padding:12px; font-size:12px; min-width:175px; position:sticky; top:0; z-index:3; text-align:left; }
+  thead th:first-child { min-width:155px; width:155px; position:sticky; left:0; z-index:5; background:#222; color:var(--gold); }
+  thead th .web { display:block; margin-top:2px; font-weight:400; color:#646b74; word-break:break-word; font-size:11px; }
+  .group-heading th { background:#222; color:white; text-align:left; padding:9px 14px; letter-spacing:.015em; font-size:12px; position:sticky; left:0; z-index:2; }
+  .factor-label { width:155px; min-width:155px; padding:12px; font-size:12px; font-weight:750; text-align:left; background:#f7f8fa; position:sticky; left:0; z-index:1; }
+  .factor-label .helper { display:block; font-size:11px; color:#737983; font-weight:400; margin-top:4px; }
+  td { padding:5px; background:#fff; }
+  td textarea { width:100%; border:1px solid transparent; background:#fff; border-radius:7px; padding:8px 7px; min-height:66px; display:block; resize:vertical; font-size:12px; line-height:1.4; }
+  td textarea:hover { border-color:#e4e8ec; }
+  td textarea:focus { outline:2px solid #eac249; outline-offset:0; }
+  td textarea:not(:placeholder-shown) { background:#fffdf4; }
+  .empty { text-align:center; padding:50px 30px 60px; }
+  .empty-illustration { width:65px; height:65px; margin:0 auto 17px; border-radius:19px; display:grid; place-items:center; background:#fff6cf; color:#725800; font-size:31px; }
+  .empty h3 { margin:0 0 6px; letter-spacing:-.02em; }
+  .empty p { max-width:310px; margin:0 auto; color:#74777d; font-size:13px; }
+  .footer-line { border-top:1px solid var(--line); padding:15px 22px 18px; display:flex; align-items:center; justify-content:space-between; gap:12px; background:#fff; }
+  .footer-line p { color:#616771; font-size:12px; margin:0; max-width:440px; }
+  .status { font-weight:750; color:#345a3c; font-size:12px; text-align:right; }
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  @media(max-width:950px) { .columns { grid-template-columns:1fr; } .compare-card { position:static; } .left-col { grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; } .intro { align-items:start; } .table-zone { max-height:600px; } }
+  @media(max-width:680px) { .shell { padding:27px 13px 40px; } .brand-inner { padding:12px 15px; } .brand-meta { font-size:10px; } .intro { display:block; } .summary { margin-top:17px; display:inline-block; } .left-col { grid-template-columns:1fr; } .card-head,.choice-tools,.custom-wrap,.programs { padding-left:17px; padding-right:17px; } .compare-head { padding:18px 15px; flex-wrap:wrap; } .compare-head .download { width:100%; } .footer-line { flex-direction:column; align-items:start; } .status { text-align:left; } }
+  @media print { .brandbar,.left-col,.download,.footer-line { display:none; } .shell { padding:0; } .intro { margin-bottom:15px; } .columns { display:block; } .card { border:0; } .table-zone { overflow:visible; max-height:none; } thead th,.factor-label,.group-heading th { position:static; } textarea { min-height:45px !important; resize:none !important; } }
+
+  /* Shared Learning Hub quick-tool styling */
+  :root { --ink:#202020; --muted:#626262; --line:#deddd5; --page:#fff; --gold:#ffcd00; --radius:10px; font-family:Aptos, "Segoe UI", Arial, sans-serif; }
+  body { background:#fff; color:var(--ink); font-size:16px; line-height:1.55; }
+  :focus-visible { outline:3px solid #577fc1; outline-offset:3px; }
+  .shell { max-width:1180px; padding:25px 24px 65px; }
+  .intro { align-items:start; gap:18px; margin-bottom:24px; }
+  h1 { font-size:clamp(28px,3vw,34px); line-height:1.13; letter-spacing:-.8px; margin:0 0 10px; font-weight:800; }
+  .intro p { font-size:16px; line-height:1.55; max-width:660px; }
+  .summary { background:#f7f7f4; border:1px solid var(--line); border-radius:8px; box-shadow:none; min-width:145px; padding:9px 14px; }
+  .summary strong { font-size:14px; letter-spacing:0; font-weight:750; }
+  .summary span { font-size:12px; color:var(--muted); }
+  .columns { grid-template-columns:minmax(310px,370px) minmax(0,1fr); gap:18px; }
+  .left-col { gap:16px; }
+  .card { box-shadow:none; border:1px solid var(--line); border-radius:10px; border-top:4px solid var(--gold); }
+  .card-head { padding:21px 22px 16px; }
+  h2 { font-size:19px; letter-spacing:-.015em; }
+  .small { font-size:13px; line-height:1.5; }
+  .step { background:#f5f5f3; color:#292929; border-left:3px solid var(--gold); border-radius:5px; width:27px; height:27px; font-size:12px; }
+  .count-chip { background:#efeee7; color:#444; border-radius:20px; }
+  .link-button { font-size:13px; color:var(--ink); font-weight:600; }
+  .link-button:hover { color:#555; }
+  details.category { margin:0 15px 8px; border:0; background:#f5f5f3; border-radius:8px; overflow:hidden; }
+  details.category summary { padding:14px 15px; font-size:14px; font-weight:700; line-height:1.4; }
+  details.category summary::before { content:""; width:4px; height:22px; border-radius:3px; background:var(--gold); flex:0 0 4px; }
+  details.category summary:hover { background:#ebebe7; }
+  details.category[open] summary { border-bottom:1px solid #e4e4df; }
+  .category-label { flex:1; gap:9px; }
+  .cat-count { background:#e9e8e2; font-size:11px; padding:2px 7px; }
+  .chev { font-size:22px; line-height:1; }
+  .checks { padding:7px 10px 12px; background:#fff; gap:2px; }
+  .criterion { padding:10px 9px; border-radius:7px; border:1px solid transparent; gap:11px; }
+  .criterion:hover { background:#f6f6f4; }
+  .criterion:has(input:checked) { background:#f5f5f3; border-color:transparent; }
+  .criterion input { appearance:none; -webkit-appearance:none; display:grid; place-items:center; border:1.5px solid #555; border-radius:4px; background:#fff; width:18px; height:18px; margin:1px 0 0; }
+  .criterion input:checked::after { content:"✓"; color:#222; font-size:14px; font-weight:800; line-height:1; }
+  .criterion input:focus-visible { outline:3px solid #577fc1; outline-offset:2px; }
+  .criterion strong { font-size:14px; font-weight:650; }
+  .criterion em { font-size:12px; line-height:1.35; color:var(--muted); }
+  .custom-wrap label { font-size:14px; font-weight:650; }
+  input[type=text],input[type=url] { border:1px solid #aaa; border-radius:7px; font-size:14px; padding:10px 11px; }
+  .mini-button { background:#fff; color:var(--ink); border:1px solid var(--ink); border-radius:7px; font-size:14px; padding:9px 16px; }
+  .mini-button:hover,.add-program:hover { background:#f0eee5; }
+  .custom-chip { background:#efeee7; border:1px solid #deddd5; color:var(--ink); }
+  .custom-chip button { color:#555; }
+  .program-row { background:#f7f7f4; border:1px solid #e6e5df; border-radius:8px; }
+  .program-title { color:#666; }
+  .add-program { border:1px solid #aaa; border-radius:7px; color:var(--ink); }
+  .compare-head { padding:21px 22px; }
+  .compare-head h2 { font-size:19px; }
+  .download { border-radius:7px; border:1px solid var(--gold); box-shadow:none; font-size:14px; font-weight:750; padding:11px 16px; }
+  .download:hover { background:#ffe071; }
+  thead th { background:#f5f5f3; border-bottom:1px solid var(--line); }
+  thead th:first-child { background:#202020; color:#fff; }
+  .group-heading th { background:#f5f5f3; color:#222; border-left:4px solid var(--gold); border-bottom:1px solid var(--line); font-weight:750; }
+  .factor-label { background:#fbfbfa; font-size:13px; }
+  .factor-label .helper { color:#777; font-size:11px; }
+  td textarea { border-radius:5px; font-size:13px; }
+  td textarea:not(:placeholder-shown) { background:#fbfbfa; }
+  td textarea:focus { outline:2px solid #577fc1; }
+  .footer-line p { font-size:12px; color:var(--muted); }
+  .status { color:var(--muted); font-weight:500; }
+  .empty-illustration { background:#f5f5f3; color:#555; border-left:4px solid var(--gold); }
+  @media(max-width:680px) { .shell { padding:24px 15px 50px; } .intro { display:block; } .summary { margin-top:14px; display:inline-block; } .card-head,.choice-tools,.custom-wrap,.programs { padding-left:17px; padding-right:17px; } details.category { margin-left:10px; margin-right:10px; } .compare-head { padding:19px 17px; } }
+  @media print { .card { border:0; } .summary { border:0; background:none; } }
+
+  /* One phase at a time, consistent with the other guided tools */
+  .progress { display:flex; gap:6px; max-width:760px; margin:23px 0 25px; }
+  .progress-part { flex:1; min-width:0; padding:8px 4px 11px; border-bottom:4px solid var(--line); font-size:13px; color:#676767; }
+  .progress-part.active { border-color:var(--ink); color:var(--ink); font-weight:750; }
+  .progress-part.done { border-color:var(--gold); color:#4b4b4b; }
+  .pages { max-width:760px; }
+  .pages.wide { max-width:none; }
+  .phase-page[hidden] { display:none !important; }
+  .phase-page h2:focus { outline:none; }
+  .phase-page .card-head .small { margin-left:38px; }
+  .phase-page .note { margin:0; }
+  .phase-actions { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:19px 22px 22px; border-top:1px solid var(--line); }
+  .phase-actions .hint { color:var(--muted); font-size:13px; }
+  .nav-button { border:1px solid #888; border-radius:7px; background:#fff; color:var(--ink); padding:11px 18px; font-size:14px; font-weight:650; }
+  .nav-button:hover { background:#f0eee5; }
+  .nav-button.primary { background:var(--gold); border-color:var(--gold); font-weight:750; }
+  .nav-button.primary:hover { background:#ffe071; }
+  .nav-button:disabled { opacity:.4; cursor:not-allowed; }
+  .compare-card { position:static; }
+  .compare-card .table-zone { max-height:none; overflow:auto; }
+  .compare-card .compare-head { align-items:center; }
+  @media(max-width:680px) { .progress { gap:4px; margin:17px 0 19px; } .progress-part { font-size:11px; padding:6px 2px 9px; } .phase-actions { flex-wrap:wrap; padding:17px; } .phase-actions .nav-button.primary { margin-left:auto; } .phase-page .card-head .small { margin-left:38px; } }
+  @media print { .progress,.phase-actions { display:none; } .pages { max-width:none; } .phase-page[hidden] { display:none !important; } }
+</style>
+</head>
+<body>
+<main class="shell">
+  <section class="intro" aria-labelledby="page-title">
+    <div><h1 id="page-title">Graduate Program Comparison</h1><p>Choose what's important to you, add programs you're interested in, and create an Excel comparison sheet.</p></div>
+    <div class="summary" aria-live="polite"><strong id="summary-count">7 factors</strong><span id="summary-programs">3 programs to compare</span></div>
+  </section>
+  <nav class="progress" aria-label="Comparison steps">
+    <span class="progress-part active" data-progress="0" aria-current="step">1 · Your priorities</span>
+    <span class="progress-part" data-progress="1">2 · Programs</span>
+    <span class="progress-part" data-progress="2">3 · Comparison</span>
+  </nav>
+  <div class="pages" id="pages">
+      <section class="card phase-page" id="phase-factors" data-phase="0" aria-labelledby="criteria-heading">
+        <div class="card-head"><div class="section-label"><span class="step">1</span><h2 id="criteria-heading">What matters to you?</h2></div><p class="small">Pick a few factors you want to research. You can always change these later.</p></div>
+        <div class="choice-tools"><span class="count-chip" id="selected-count">7 selected</span><div><button class="link-button" id="suggested" type="button">Start with suggested</button><span aria-hidden="true" style="color:#a0a0a0;padding:0 7px;">·</span><button class="link-button" id="clear" type="button">Clear</button></div></div>
+        <div id="criteria"></div>
+        <div class="custom-wrap"><label for="custom-factor">Something else important to you?</label><div class="add-criterion"><input type="text" id="custom-factor" placeholder="Add your own comparison factor" maxlength="70"><button class="mini-button" id="add-factor" type="button">Add</button></div><div class="custom-list" id="custom-list" aria-live="polite"></div></div>
+        <div class="phase-actions"><span class="hint">Choose at least one factor to continue.</span><button class="nav-button primary" id="next-factors" type="button">Next: Add programs →</button></div>
+      </section>
+      <section class="card phase-page" id="phase-programs" data-phase="1" aria-labelledby="programs-heading" hidden>
+        <div class="card-head"><div class="section-label"><span class="step">2</span><h2 id="programs-heading">Which programs?</h2></div><p class="small">Add 2–6 programs. You can leave names blank and fill them in later in Excel.</p></div>
+        <div class="programs"><div id="program-list"></div><button type="button" id="add-program" class="add-program">+ Add another program</button></div>
+        <div class="note">Program webpages are optional. Entries save in this browser when supported; download Excel to keep a copy.</div>
+        <div class="phase-actions"><button class="nav-button" id="back-programs" type="button">← Back</button><button class="nav-button primary" id="next-programs" type="button">Next: Compare programs →</button></div>
+      </section>
+    <section class="card compare-card phase-page" id="phase-compare" data-phase="2" aria-labelledby="compare-heading" hidden>
+      <div class="compare-head"><div><div class="section-label"><span class="step">3</span><h2 id="compare-heading">Your comparison</h2></div><p class="small">Add notes here or use the editable Excel file.</p></div><button id="download" class="download" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 17v4h16v-4"/></svg> Download Excel</button></div>
+      <div id="compare-area" class="table-zone" aria-live="polite"></div>
+      <div class="footer-line"><p>Use program websites and conversations with faculty, students, or admissions staff to check details. A blank cell is a question to explore.</p><div id="status" class="status" role="status" aria-live="polite"></div></div>
+      <div class="phase-actions"><button class="nav-button" id="back-compare" type="button">← Back to programs</button><button class="nav-button primary" id="download-bottom" type="button">Download Excel</button></div>
+    </section>
+  </div>
+</main>
+<script>
+(() => {
+  'use strict';
+  const GROUPS = [
+    {id:'fit',name:'Academic & program fit',items:[
+      ['focus','Areas of focus','Specializations, research topics, or populations'],
+      ['curriculum','Courses & curriculum','Required classes and electives'],
+      ['faculty','Faculty & mentor fit','People you might learn or research with'],
+      ['accreditation','Accreditation','Recognition needed for your goals'],
+      ['experience','Hands-on experience','Internship, clinical, practicum, or research'],
+      ['cohort','Program size','Cohort size or student-faculty ratio']
+    ]},
+    {id:'money',name:'Cost & funding',items:[
+      ['tuition','Tuition & fees','Estimated total program cost'],
+      ['funding','Funding options','Assistantships, scholarships, stipends'],
+      ['living','Living costs','Housing, transport, other expenses'],
+      ['aid','Funding conditions','Renewal, workload, or eligibility']
+    ]},
+    {id:'life',name:'Format & experience',items:[
+      ['format','Program format','In person, online, hybrid'],
+      ['duration','Time to completion','Full- or part-time options'],
+      ['location','Location','City, distance, community'],
+      ['flexibility','Scheduling & flexibility','Evening courses, work compatibility'],
+      ['support','Student support','Advising, accessibility, wellbeing'],
+      ['culture','Student experience','Mentorship, cohort, belonging']
+    ]},
+    {id:'admissions',name:'Application & admission',items:[
+      ['deadline','Application deadline','Priority and final dates'],
+      ['prerequisites','Prerequisites','Courses, experience, or degree requirements'],
+      ['testing','Entrance tests','GRE, GMAT, or program-specific tests'],
+      ['materials','Application materials','Statement, CV, recommendations, portfolio'],
+      ['fee','Application fee','Cost or fee-waiver options'],
+      ['facultycontact','Faculty contact','Whether outreach is useful or required']
+    ]},
+    {id:'outcomes',name:'Career & long-term fit',items:[
+      ['careers','Career outcomes','Roles and fields graduates enter'],
+      ['licensure','Licensure or certification','Pathway requirements, if relevant'],
+      ['placement','Placement results','Published outcomes or graduate destinations'],
+      ['connections','Career connections','Alumni, employers, career support'],
+      ['nextsteps','Further study options','Preparation for doctoral or advanced study']
+    ]}
+  ];
+  const SUGGESTED = ['focus','faculty','tuition','funding','format','deadline','careers'];
+  const ALL = Object.fromEntries(GROUPS.flatMap(g => g.items.map(([id,title,hint]) => [id,{id,title,hint,group:g.id}])));
+  const STORE_KEY = 'iowa-grad-compare-v2';
+  const uid = () => 'id'+Math.random().toString(36).slice(2,10);
+  const start = () => ({
+    selected:[...SUGGESTED],
+    customs:[],
+    programs:[0,1,2].map(n=>({id:uid(),name:'',url:''})),
+    values:{},
+    expanded:['fit','money','life'],
+    phase:0
+  });
+  function restore() {
+    try {
+      const raw=JSON.parse(localStorage.getItem(STORE_KEY));
+      if(raw && Array.isArray(raw.selected) && Array.isArray(raw.programs) && raw.programs.length>=2 &&
+          raw.programs.length<=6 && Array.isArray(raw.customs) && typeof raw.values==='object') {
+        return {...start(),...raw,selected:raw.selected.filter(x => !!ALL[x] || raw.customs.some(c=>c.id===x))};
+      }
+    } catch(e) {}
+    return start();
+  }
+  let state=restore();
+  state.phase=Number.isInteger(state.phase) && state.phase>=0 && state.phase<=2 ? state.phase : 0;
+  const $ = id => document.getElementById(id);
+  const save=() => {try{ localStorage.setItem(STORE_KEY,JSON.stringify(state)); } catch(e){}};
+  const el=(tag,cls,text) => { const v=document.createElement(tag); if(cls) v.className=cls; if(text!==undefined) v.textContent=text; return v; };
+  const allSelected=() => [...GROUPS.flatMap(g=>g.items.filter(([id])=>state.selected.includes(id)).map(([id,title,hint])=>({id,title,hint,group:g.id,groupName:g.name}))),
+    ...state.customs.filter(c=>state.selected.includes(c.id)).map(c=>({...c,group:'custom',groupName:'Your priorities',hint:''}))];
+  const valueKey=(pid,fid)=>pid+':'+fid;
+  const visibleGroups=()=> {
+    const active=allSelected();
+    return [...GROUPS.map(g=>({id:g.id,name:g.name,items:active.filter(x=>x.group===g.id)})),{id:'custom',name:'Your priorities',items:active.filter(x=>x.group==='custom')}].filter(g=>g.items.length);
+  };
+  function summary() {
+    const n=allSelected().length, p=state.programs.length;
+    $('selected-count').textContent=n+' selected';
+    $('summary-count').textContent=n+' '+(n===1?'factor':'factors');
+    $('summary-programs').textContent=p+' '+(p===1?'program':'programs')+' to compare';
+    $('next-factors').disabled=n===0;
+  }
+  function showPhase(target){
+    if(target>0 && allSelected().length===0) return;
+    state.phase=Math.max(0,Math.min(2,target));
+    if(state.phase===2) renderComparison();
+    save();
+    document.querySelectorAll('.phase-page').forEach(page=>{
+      page.hidden=Number(page.dataset.phase)!==state.phase;
+    });
+    document.querySelectorAll('[data-progress]').forEach(item=>{
+      const i=Number(item.dataset.progress);
+      item.classList.toggle('active',i===state.phase);
+      item.classList.toggle('done',i<state.phase);
+      if(i===state.phase)item.setAttribute('aria-current','step');
+      else item.removeAttribute('aria-current');
+    });
+    $('pages').classList.toggle('wide',state.phase===2);
+    window.scrollTo({top:0,behavior:'auto'});
+    if(document.activeElement && document.activeElement.tagName==='BUTTON'){
+      const heading=document.querySelector('.phase-page:not([hidden]) h2');
+      if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true});}
+    }
+  }
+  $('next-factors').addEventListener('click',()=>showPhase(1));
+  $('back-programs').addEventListener('click',()=>showPhase(0));
+  $('next-programs').addEventListener('click',()=>showPhase(2));
+  $('back-compare').addEventListener('click',()=>showPhase(1));
+  $('download-bottom').addEventListener('click',()=>$('download').click());
+  function renderCriteria(){
+    const wrap=$('criteria'); wrap.replaceChildren();
+    for(const group of GROUPS) {
+      const d=el('details','category'); d.open=state.expanded.includes(group.id);
+      const sm=el('summary');
+      const left=el('span','category-label',group.name);
+      const n=group.items.filter(([id])=>state.selected.includes(id)).length;
+      const count=el('span','cat-count',String(n)); left.append(count);
+      sm.append(left,el('span','chev','›'));
+      d.append(sm);
+      d.addEventListener('toggle',()=>{const set=new Set(state.expanded);d.open?set.add(group.id):set.delete(group.id);state.expanded=[...set];save();});
+      const checks=el('div','checks');
+      for(const [id,title,hint] of group.items) {
+        const label=el('label','criterion');
+        const input=el('input');input.type='checkbox';input.checked=state.selected.includes(id);input.dataset.criterion=id;
+        const text=el('span');text.append(el('strong','',title),el('em','',hint));
+        label.append(input,text);checks.append(label);
+        input.addEventListener('change',()=>{
+          state.selected=input.checked ? [...state.selected,id] : state.selected.filter(x=>x!==id);
+          save();count.textContent=String(group.items.filter(([fid])=>state.selected.includes(fid)).length);summary();renderComparison();
+        });
+      }
+      d.append(checks);wrap.append(d);
+    }
+    const list=$('custom-list');list.replaceChildren();
+    state.customs.forEach(c=>{
+      const chip=el('span','custom-chip',c.title);
+      const remove=el('button','', '×');remove.type='button';remove.title='Remove '+c.title;remove.setAttribute('aria-label','Remove '+c.title);
+      remove.addEventListener('click',()=>{state.customs=state.customs.filter(v=>v.id!==c.id);state.selected=state.selected.filter(v=>v!==c.id);save();renderCriteria();renderComparison();});
+      chip.append(remove);list.append(chip);
+    });
+    summary();
+  }
+  function addCustom(){
+    const input=$('custom-factor');const title=input.value.trim().replace(/\s+/g,' ');
+    if(!title){input.focus();return;}
+    if(state.customs.some(c=>c.title.toLowerCase()===title.toLowerCase())) {input.setCustomValidity('This factor is already added.');input.reportValidity();return;}
+    input.setCustomValidity('');
+    const id=uid();
+    state.customs.push({id,title});
+    state.selected.push(id);
+    input.value='';save();renderCriteria();renderComparison();input.focus();
+  }
+  $('add-factor').addEventListener('click',addCustom);
+  $('custom-factor').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addCustom();}});
+  $('custom-factor').addEventListener('input',e=>e.target.setCustomValidity(''));
+  $('suggested').addEventListener('click',()=>{state.selected=[...SUGGESTED,...state.customs.map(c=>c.id)];save();renderCriteria();renderComparison();});
+  $('clear').addEventListener('click',()=>{state.selected=[];save();renderCriteria();renderComparison();});
+  function renderPrograms(){
+    const container=$('program-list');container.replaceChildren();
+    state.programs.forEach((program,i)=>{
+      const row=el('div','program-row');
+      const heading=el('div','program-title');
+      heading.append(el('span','','PROGRAM '+(i+1)));
+      if(state.programs.length>2){
+        const remove=el('button','remove-program','Remove');remove.type='button';
+        remove.setAttribute('aria-label','Remove program '+(i+1));
+        remove.addEventListener('click',()=>{state.programs=state.programs.filter(p=>p.id!==program.id);save();renderPrograms();renderComparison();});
+        heading.append(remove);
+      }
+      const name=el('input');name.type='text';name.value=program.name;name.maxLength=90;name.placeholder='School / program name';name.setAttribute('aria-label','Name for program '+(i+1));
+      const url=el('input');url.type='url';url.value=program.url;url.maxLength=250;url.placeholder='Program webpage (optional)';url.setAttribute('aria-label','Website for program '+(i+1));
+      name.addEventListener('input',()=>{program.name=name.value;save();updateTableHeaders();});
+      url.addEventListener('input',()=>{program.url=url.value;save();updateTableHeaders();});
+      row.append(heading,name,url);container.append(row);
+    });
+    $('add-program').disabled=state.programs.length>=6;
+    $('add-program').textContent=state.programs.length>=6?'Maximum of 6 programs':'+ Add another program';
+    summary();
+  }
+  $('add-program').addEventListener('click',()=>{if(state.programs.length>=6)return;state.programs.push({id:uid(),name:'',url:''});save();renderPrograms();renderComparison();});
+  function updateTableHeaders(){
+    document.querySelectorAll('[data-program-header]').forEach(h=>{
+      const p=state.programs.find(x=>x.id===h.dataset.programHeader);
+      if(!p)return;
+      h.replaceChildren(document.createTextNode(p.name.trim() || 'Program '+(state.programs.indexOf(p)+1)));
+      if(p.url.trim()) {
+        const link=el('span','web',p.url.trim().replace(/^https?:\/\//,'').slice(0,65));h.append(link);
+      }
+    });
+  }
+  const BASE_NOTES = [
+    {id:'overall',title:'What stands out?'},
+    {id:'questions',title:'Questions to ask'},
+    {id:'action',title:'Next step'}
+  ];
+  function renderComparison(){
+    const area=$('compare-area');area.replaceChildren();
+    const groups=visibleGroups();
+    if(!groups.length){
+      const empty=el('div','empty');
+      empty.append(el('div','empty-illustration','☑'),el('h3','','Build your comparison'),el('p','','Go back to the first step and select at least one factor.'));
+      area.append(empty);$('download').disabled=true;summary();return;
+    }
+    $('download').disabled=false;
+    const table=el('table');table.setAttribute('aria-label','Editable graduate program comparison');
+    const thead=el('thead');const tr=el('tr');
+    tr.append(el('th','','Your factors'));
+    for(const p of state.programs) {const th=el('th');th.dataset.programHeader=p.id;tr.append(th);}
+    thead.append(tr);table.append(thead);
+    const tbody=el('tbody');
+    const makeRows=(items)=>{
+      for(const item of items){
+        const row=el('tr');const label=el('th','factor-label',item.title);label.scope='row';
+        if(item.hint){label.append(el('span','helper',item.hint));}
+        row.append(label);
+        for(const p of state.programs){
+          const td=el('td'),ta=el('textarea');ta.rows=2;
+          ta.setAttribute('aria-label',item.title+' for '+(p.name.trim()||'Program '+(state.programs.indexOf(p)+1)));
+          ta.placeholder='Add details…';
+          ta.value=state.values[valueKey(p.id,item.id)]||'';
+          ta.addEventListener('input',()=>{state.values[valueKey(p.id,item.id)]=ta.value;save();});
+          td.append(ta);row.append(td);
+        }
+        tbody.append(row);
+      }
+    };
+    for(const group of groups){
+      const groupRow=el('tr','group-heading'),th=el('th','',group.name);
+      th.colSpan=state.programs.length+1;groupRow.append(th);tbody.append(groupRow);makeRows(group.items);
+    }
+    const noteHeading=el('tr','group-heading'),nHead=el('th','','My takeaways');nHead.colSpan=state.programs.length+1;noteHeading.append(nHead);tbody.append(noteHeading);
+    makeRows(BASE_NOTES);
+    table.append(tbody);area.append(table);updateTableHeaders();summary();
+  }
+  const xml=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,'');
+  const col = n => {let s='';while(n){n--;s=String.fromCharCode(65+n%26)+s;n=Math.floor(n/26);}return s;};
+  const cell=(row,column,text,style=0)=>{
+    if(text===undefined || text===null || text==='')return '<c r="'+col(column)+row+'" s="'+style+'"/>';
+    return '<c r="'+col(column)+row+'" s="'+style+'" t="inlineStr"><is><t xml:space="preserve">'+xml(text)+'</t></is></c>';
+  };
+  function createWorkbookXml(){
+    const programCount=state.programs.length, lastCol=col(programCount+1);
+    const rows=[],merges=[];let r=1;
+    function add(cells,height=31) {rows.push('<row r="'+r+'" ht="'+height+'" customHeight="1">'+cells.join('')+'</row>');r++;}
+    add([cell(1,1,'GRADUATE PROGRAM COMPARISON',1)],38);merges.push('A1:'+lastCol+'1');
+    add([cell(2,1,'My selected factors  •  Compare details, questions, and next steps',6)],24);merges.push('A2:'+lastCol+'2');
+    add([],13);
+    add([cell(4,1,'WHAT TO COMPARE',2),...state.programs.map((p,i)=>cell(4,i+2,p.name.trim()||'Program '+(i+1),2))],38);
+    add([cell(5,1,'Program webpage',4),...state.programs.map((p,i)=>cell(5,i+2,p.url,5))],45);
+    add([],14);
+    for(const group of visibleGroups()) {
+      const n=r;
+      add([cell(n,1,group.name.toUpperCase(),3)],27);
+      merges.push('A'+n+':'+lastCol+n);
+      for(const item of group.items){
+        const n=r;
+        add([cell(n,1,item.title,4),...state.programs.map((p,i)=>cell(n,i+2,state.values[valueKey(p.id,item.id)]||'',5))],65);
+      }
+    }
+    const notesRow=r;
+    add([cell(r,1,'MY TAKEAWAYS',3)],27);merges.push('A'+notesRow+':'+lastCol+notesRow);
+    for(const item of BASE_NOTES){
+      const n=r;add([cell(n,1,item.title,4),...state.programs.map((p,i)=>cell(n,i+2,state.values[valueKey(p.id,item.id)]||'',5))],65);
+    }
+    const final=r;
+    add([cell(r,1,'Verify details with official program sources. This comparison is yours to edit.',6)],30);
+    merges.push('A'+final+':'+lastCol+final);
+    const cols='<col min="1" max="1" width="26" customWidth="1"/>'+Array.from({length:programCount},(_,i)=>'<col min="'+(i+2)+'" max="'+(i+2)+'" width="32" customWidth="1"/>').join('');
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+      '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
+      '<sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><dimension ref="A1:'+lastCol+final+'"/>'+
+      '<sheetViews><sheetView workbookViewId="0" showGridLines="0"><pane xSplit="1" ySplit="4" topLeftCell="B5" activePane="bottomRight" state="frozen"/></sheetView></sheetViews>'+
+      '<sheetFormatPr defaultRowHeight="16"/><cols>'+cols+'</cols><sheetData>'+rows.join('')+'</sheetData>'+
+      '<mergeCells count="'+merges.length+'">'+merges.map(m=>'<mergeCell ref="'+m+'"/>').join('')+'</mergeCells>'+
+      '<pageMargins left="0.35" right="0.35" top="0.55" bottom="0.55" header="0.2" footer="0.2"/>'+
+      '<pageSetup orientation="landscape" paperSize="9" fitToWidth="1" fitToHeight="0"/>'+
+      '<printOptions horizontalCentered="1"/></worksheet>';
+  }
+  const stylesXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+    '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
+    '<fonts count="4">'+
+      '<font><sz val="11"/><name val="Aptos"/><color rgb="FF191919"/></font>'+
+      '<font><b/><sz val="18"/><name val="Aptos"/><color rgb="FF191919"/></font>'+
+      '<font><b/><sz val="11"/><name val="Aptos"/><color rgb="FFFFFFFF"/></font>'+
+      '<font><b/><sz val="11"/><name val="Aptos"/><color rgb="FF222222"/></font>'+
+    '</fonts>'+
+    '<fills count="6"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>'+
+      '<fill><patternFill patternType="solid"><fgColor rgb="FFFFCD00"/><bgColor indexed="64"/></patternFill></fill>'+
+      '<fill><patternFill patternType="solid"><fgColor rgb="FF202020"/><bgColor indexed="64"/></patternFill></fill>'+
+      '<fill><patternFill patternType="solid"><fgColor rgb="FFF2F3F5"/><bgColor indexed="64"/></patternFill></fill>'+
+      '<fill><patternFill patternType="solid"><fgColor rgb="FFFFFBEC"/><bgColor indexed="64"/></patternFill></fill></fills>'+
+    '<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border>'+
+    '<border><left style="thin"><color rgb="FFE1E4E8"/></left><right style="thin"><color rgb="FFE1E4E8"/></right><top style="thin"><color rgb="FFE1E4E8"/></top><bottom style="thin"><color rgb="FFE1E4E8"/></bottom><diagonal/></border></borders>'+
+    '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'+
+    '<cellXfs count="7">'+
+      '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'+
+      '<xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyAlignment="1"><alignment vertical="center" indent="1"/></xf>'+
+      '<xf numFmtId="0" fontId="2" fillId="3" borderId="1" xfId="0" applyAlignment="1"><alignment vertical="center" wrapText="1" indent="1"/></xf>'+
+      '<xf numFmtId="0" fontId="2" fillId="3" borderId="0" xfId="0" applyAlignment="1"><alignment vertical="center" indent="1"/></xf>'+
+      '<xf numFmtId="0" fontId="3" fillId="4" borderId="1" xfId="0" applyAlignment="1"><alignment vertical="center" wrapText="1" indent="1"/></xf>'+
+      '<xf numFmtId="0" fontId="0" fillId="5" borderId="1" xfId="0" applyAlignment="1"><alignment vertical="center" wrapText="1" indent="1"/></xf>'+
+      '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment vertical="center" indent="1"/></xf>'+
+    '</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+  function zipEncode(entries) {
+    const te=new TextEncoder(),local=[],central=[];let offset=0;
+    const crcTable=new Uint32Array(256);
+    for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xedb88320^(c>>>1):c>>>1;crcTable[n]=c>>>0;}
+    const crc32=(b)=>{let c=0xffffffff;for(const x of b)c=crcTable[(c^x)&255]^(c>>>8);return (c^0xffffffff)>>>0;};
+    const u16=(view,pos,value)=>view.setUint16(pos,value,true);
+    const u32=(view,pos,value)=>view.setUint32(pos,value>>>0,true);
+    for(const [name,text] of entries) {
+      const fname=te.encode(name),data=te.encode(text),crc=crc32(data);
+      const lh=new Uint8Array(30+fname.length),lv=new DataView(lh.buffer);
+      u32(lv,0,0x04034b50);u16(lv,4,20);u16(lv,6,0x800);u16(lv,8,0);u16(lv,10,0);u16(lv,12,0);
+      u32(lv,14,crc);u32(lv,18,data.length);u32(lv,22,data.length);u16(lv,26,fname.length);u16(lv,28,0);
+      lh.set(fname,30);local.push(lh,data);
+      const ch=new Uint8Array(46+fname.length),cv=new DataView(ch.buffer);
+      u32(cv,0,0x02014b50);u16(cv,4,20);u16(cv,6,20);u16(cv,8,0x800);u16(cv,10,0);u16(cv,12,0);u16(cv,14,0);
+      u32(cv,16,crc);u32(cv,20,data.length);u32(cv,24,data.length);u16(cv,28,fname.length);u16(cv,30,0);
+      u16(cv,32,0);u16(cv,34,0);u16(cv,36,0);u32(cv,38,0);u32(cv,42,offset);
+      ch.set(fname,46);central.push(ch);offset+=lh.length+data.length;
+    }
+    const cdSize=central.reduce((a,b)=>a+b.length,0),end=new Uint8Array(22),ev=new DataView(end.buffer);
+    u32(ev,0,0x06054b50);u16(ev,4,0);u16(ev,6,0);u16(ev,8,entries.length);u16(ev,10,entries.length);u32(ev,12,cdSize);u32(ev,16,offset);u16(ev,20,0);
+    return new Blob([...local,...central,end],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  }
+  function exportXlsx(){
+    if(!allSelected().length)return;
+    const files=[
+      ['[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>'],
+      ['_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
+      ['xl/workbook.xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Program comparison" sheetId="1" r:id="rId1"/></sheets><calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>'],
+      ['xl/_rels/workbook.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'],
+      ['xl/styles.xml',stylesXml],
+      ['xl/worksheets/sheet1.xml',createWorkbookXml()]
+    ];
+    const blob=zipEncode(files);
+    const a=document.createElement('a'),url=URL.createObjectURL(blob);
+    a.href=url;a.download='Graduate_Program_Comparison.xlsx';document.body.append(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    $('status').textContent='Excel download ready';
+  }
+  $('download').addEventListener('click',()=>{try{exportXlsx();}catch(err){$('status').textContent='Download could not start. Please try again.';console.error(err);}});
+  renderCriteria();renderPrograms();renderComparison();showPhase(state.phase);
+})();
+</script>
+</body>
+</html>
