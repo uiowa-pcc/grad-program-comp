@@ -142,6 +142,17 @@
   .criterion input:focus-visible { outline:3px solid #577fc1; outline-offset:2px; }
   .criterion strong { font-size:14px; font-weight:650; }
   .criterion em { font-size:12px; line-height:1.35; color:var(--muted); }
+  .criterion { cursor:default; align-items:center; }
+  .criterion-choice { display:flex; align-items:flex-start; flex:1; min-width:0; gap:11px; cursor:pointer; }
+  .help-button { width:23px; height:23px; min-width:23px; display:inline-grid; place-items:center; padding:0; border:1px solid #aaa9a1; border-radius:50%; background:#fff; color:#555; font-size:12px; font-weight:750; line-height:1; vertical-align:middle; cursor:help; }
+  .help-button:hover,.help-button[aria-expanded="true"] { border-color:#555; color:#222; background:#fff4bf; }
+  .help-button:focus-visible { outline:3px solid #577fc1; outline-offset:2px; }
+  .source-tooltip { position:fixed; z-index:100; width:270px; max-width:calc(100vw - 24px); background:#252525; color:#fff; border-radius:8px; padding:11px 13px; font-size:12px; font-weight:400; line-height:1.5; box-shadow:0 7px 22px #0003; visibility:hidden; pointer-events:none; }
+  .source-tooltip[data-visible="true"] { visibility:visible; }
+  .source-tooltip strong { display:block; color:#ffdc5c; font-size:12px; margin-bottom:3px; }
+  .factor-title { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .factor-title .help-button { flex:none; }
+  @media print { .help-button,.source-tooltip { display:none !important; } }
   .custom-wrap label { font-size:14px; font-weight:650; }
   input[type=text],input[type=url] { border:1px solid #aaa; border-radius:7px; font-size:14px; padding:10px 11px; }
   .mini-button { background:#fff; color:var(--ink); border:1px solid var(--ink); border-radius:7px; font-size:14px; padding:9px 16px; }
@@ -207,7 +218,7 @@
   </nav>
   <div class="pages" id="pages">
       <section class="card phase-page" id="phase-factors" data-phase="0" aria-labelledby="criteria-heading">
-        <div class="card-head"><div class="section-label"><span class="step">1</span><h2 id="criteria-heading">What matters to you?</h2></div><p class="small">Pick a few factors you want to research. You can always change these later.</p></div>
+        <div class="card-head"><div class="section-label"><span class="step">1</span><h2 id="criteria-heading">What matters to you?</h2></div><p class="small">Pick a few factors to research. Hover or tap the info icons to see where to look.</p></div>
         <div class="choice-tools"><span class="count-chip" id="selected-count">7 selected</span><div><button class="link-button" id="suggested" type="button">Start with suggested</button><span aria-hidden="true" style="color:#a0a0a0;padding:0 7px;">·</span><button class="link-button" id="clear" type="button">Clear</button></div></div>
         <div id="criteria"></div>
         <div class="custom-wrap"><label for="custom-factor">Something else important to you?</label><div class="add-criterion"><input type="text" id="custom-factor" placeholder="Add your own comparison factor" maxlength="70"><button class="mini-button" id="add-factor" type="button">Add</button></div><div class="custom-list" id="custom-list" aria-live="polite"></div></div>
@@ -271,6 +282,36 @@
   ];
   const SUGGESTED = ['focus','faculty','tuition','funding','format','deadline','careers'];
   const ALL = Object.fromEntries(GROUPS.flatMap(g => g.items.map(([id,title,hint]) => [id,{id,title,hint,group:g.id}])));
+  const SOURCE_TIPS = {
+    focus:'Check the program overview, concentration pages, and faculty research areas. Ask the program if a focus is not listed.',
+    curriculum:'Look for degree requirements, the course catalog, and a sample plan of study on the department website.',
+    faculty:'Browse faculty profiles and research labs. Ask about current mentoring availability before assuming a match.',
+    accreditation:'Check the program’s accreditation page and the accrediting organization’s directory. For licensed fields, confirm state requirements too.',
+    experience:'Look for practicum, internship, clinical, and research details in the curriculum or program handbook. Ask students about access.',
+    cohort:'Check program FAQs or student profiles for cohort size. Ask the coordinator if numbers are not published.',
+    tuition:'Use university tuition and fees pages and the program’s cost information. Compare rates, required fees, and expected terms.',
+    funding:'Check departmental funding pages, assistantship listings, and the graduate school’s financial support page.',
+    living:'Start with the university’s estimated cost of attendance, then compare local housing and transportation costs.',
+    aid:'Review assistantship and scholarship terms for renewal rules, workloads, and eligibility. Ask the funding office when unclear.',
+    format:'Check the program overview and course schedule for online, hybrid, or on-campus requirements.',
+    duration:'Look at degree requirements and sample schedules for typical completion time and part-time options.',
+    location:'Use the program’s campus location, campus visit information, and local community resources.',
+    flexibility:'Check course schedules, part-time policies, and FAQs for working students. Ask whether required courses are offered evenings.',
+    support:'Browse graduate student services, academic advising, accessibility services, and career support pages.',
+    culture:'Attend an information session, talk with current students, and ask how mentoring and cohort collaboration work.',
+    deadline:'Check the program’s current admissions page. Look separately for priority, funding, and final deadlines.',
+    prerequisites:'Use the program’s admissions requirements page for required courses, experiences, and degree qualifications.',
+    testing:'Check the admissions page for this application cycle, including test waivers and optional-score policies.',
+    materials:'Use the program’s application checklist and graduate admissions instructions for required documents.',
+    fee:'Check graduate admissions fee information and the application portal for costs and fee-waiver eligibility.',
+    facultycontact:'Review admissions FAQs and faculty profiles. Ask the program whether contacting potential mentors is expected.',
+    careers:'Look for graduate career stories, alumni profiles, and program outcomes. Ask alumni about their paths.',
+    licensure:'Check the program’s licensure disclosures and your intended state licensing board’s requirements.',
+    placement:'Look for published placement or employment outcome reports. Ask the program for recent results if not available.',
+    connections:'Check alumni networks, employer partnerships, and career service offerings. Ask students which connections they use.',
+    nextsteps:'Look at research opportunities, advanced study pathways, and alumni destinations. Ask faculty about preparation for further study.'
+  };
+  const CUSTOM_SOURCE_TIP='Start with the program’s official website. If the information is not listed, ask the program coordinator or a current student.';
   const STORE_KEY = 'iowa-grad-compare-v2';
   const uid = () => 'id'+Math.random().toString(36).slice(2,10);
   const start = () => ({
@@ -296,6 +337,37 @@
   const $ = id => document.getElementById(id);
   const save=() => {try{ localStorage.setItem(STORE_KEY,JSON.stringify(state)); } catch(e){}};
   const el=(tag,cls,text) => { const v=document.createElement(tag); if(cls) v.className=cls; if(text!==undefined) v.textContent=text; return v; };
+  const sourceTooltip=el('div','source-tooltip');sourceTooltip.id='source-tooltip';sourceTooltip.setAttribute('role','tooltip');document.body.append(sourceTooltip);
+  let activeHelp=null, helpPinned=false;
+  function hideHelp(force=false){
+    if(!force && helpPinned)return;
+    if(activeHelp){activeHelp.setAttribute('aria-expanded','false');activeHelp.removeAttribute('aria-describedby');}
+    activeHelp=null;helpPinned=false;sourceTooltip.dataset.visible='false';
+  }
+  function showHelp(button,tip,pin=false){
+    if(activeHelp && activeHelp!==button)hideHelp(true);
+    activeHelp=button;helpPinned=pin||helpPinned;
+    sourceTooltip.replaceChildren(el('strong','','Where to look'),el('span','',tip));
+    sourceTooltip.dataset.visible='true';button.setAttribute('aria-expanded','true');button.setAttribute('aria-describedby','source-tooltip');
+    const rect=button.getBoundingClientRect(),width=sourceTooltip.offsetWidth,height=sourceTooltip.offsetHeight;
+    sourceTooltip.style.left=Math.max(12,Math.min(rect.left,window.innerWidth-width-12))+'px';
+    const below=rect.bottom+9,above=rect.top-height-9;
+    sourceTooltip.style.top=(below+height<window.innerHeight-12||above<12?Math.max(12,Math.min(below,window.innerHeight-height-12)):above)+'px';
+  }
+  function helpButton(id,title){
+    const button=el('button','help-button','i');button.type='button';button.setAttribute('aria-label','Where to find information about '+title);button.setAttribute('aria-expanded','false');
+    const tip=SOURCE_TIPS[id]||CUSTOM_SOURCE_TIP;
+    button.addEventListener('mouseenter',()=>showHelp(button,tip));
+    button.addEventListener('mouseleave',()=>{if(activeHelp===button)hideHelp();});
+    button.addEventListener('focus',()=>showHelp(button,tip));
+    button.addEventListener('blur',()=>{if(activeHelp===button)hideHelp(true);});
+    button.addEventListener('click',e=>{e.stopPropagation();const wasPinned=activeHelp===button&&helpPinned;if(wasPinned)hideHelp(true);else showHelp(button,tip,true);});
+    return button;
+  }
+  document.addEventListener('pointerdown',e=>{if(activeHelp && !e.target.closest('.help-button'))hideHelp(true);});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')hideHelp(true);});
+  window.addEventListener('scroll',()=>hideHelp(true),true);
+  window.addEventListener('resize',()=>hideHelp(true));
   const allSelected=() => [...GROUPS.flatMap(g=>g.items.filter(([id])=>state.selected.includes(id)).map(([id,title,hint])=>({id,title,hint,group:g.id,groupName:g.name}))),
     ...state.customs.filter(c=>state.selected.includes(c.id)).map(c=>({...c,group:'custom',groupName:'Your priorities',hint:''}))];
   const valueKey=(pid,fid)=>pid+':'+fid;
@@ -338,6 +410,7 @@
   $('back-compare').addEventListener('click',()=>showPhase(1));
   $('download-bottom').addEventListener('click',()=>$('download').click());
   function renderCriteria(){
+    hideHelp(true);
     const wrap=$('criteria'); wrap.replaceChildren();
     for(const group of GROUPS) {
       const d=el('details','category'); d.open=state.expanded.includes(group.id);
@@ -350,10 +423,10 @@
       d.addEventListener('toggle',()=>{const set=new Set(state.expanded);d.open?set.add(group.id):set.delete(group.id);state.expanded=[...set];save();});
       const checks=el('div','checks');
       for(const [id,title,hint] of group.items) {
-        const label=el('label','criterion');
+        const row=el('div','criterion'),label=el('label','criterion-choice');
         const input=el('input');input.type='checkbox';input.checked=state.selected.includes(id);input.dataset.criterion=id;
         const text=el('span');text.append(el('strong','',title),el('em','',hint));
-        label.append(input,text);checks.append(label);
+        label.append(input,text);row.append(label,helpButton(id,title));checks.append(row);
         input.addEventListener('change',()=>{
           state.selected=input.checked ? [...state.selected,id] : state.selected.filter(x=>x!==id);
           save();count.textContent=String(group.items.filter(([fid])=>state.selected.includes(fid)).length);summary();renderComparison();
@@ -366,7 +439,7 @@
       const chip=el('span','custom-chip',c.title);
       const remove=el('button','', '×');remove.type='button';remove.title='Remove '+c.title;remove.setAttribute('aria-label','Remove '+c.title);
       remove.addEventListener('click',()=>{state.customs=state.customs.filter(v=>v.id!==c.id);state.selected=state.selected.filter(v=>v!==c.id);save();renderCriteria();renderComparison();});
-      chip.append(remove);list.append(chip);
+      chip.append(helpButton(c.id,c.title),remove);list.append(chip);
     });
     summary();
   }
@@ -424,6 +497,7 @@
     {id:'action',title:'Next step'}
   ];
   function renderComparison(){
+    hideHelp(true);
     const area=$('compare-area');area.replaceChildren();
     const groups=visibleGroups();
     if(!groups.length){
@@ -440,7 +514,10 @@
     const tbody=el('tbody');
     const makeRows=(items)=>{
       for(const item of items){
-        const row=el('tr');const label=el('th','factor-label',item.title);label.scope='row';
+        const row=el('tr');const label=el('th','factor-label');label.scope='row';
+        const heading=el('span','factor-title');heading.append(el('span','',item.title));
+        if(item.id!=='overall'&&item.id!=='questions'&&item.id!=='action')heading.append(helpButton(item.id,item.title));
+        label.append(heading);
         if(item.hint){label.append(el('span','helper',item.hint));}
         row.append(label);
         for(const p of state.programs){
@@ -468,12 +545,12 @@
     if(text===undefined || text===null || text==='')return '<c r="'+col(column)+row+'" s="'+style+'"/>';
     return '<c r="'+col(column)+row+'" s="'+style+'" t="inlineStr"><is><t xml:space="preserve">'+xml(text)+'</t></is></c>';
   };
-  function createWorkbookXml(){
+  function createWorkbookXml(noteCells){
     const programCount=state.programs.length, lastCol=col(programCount+1);
     const rows=[],merges=[];let r=1;
     function add(cells,height=31) {rows.push('<row r="'+r+'" ht="'+height+'" customHeight="1">'+cells.join('')+'</row>');r++;}
     add([cell(1,1,'GRADUATE PROGRAM COMPARISON',1)],38);merges.push('A1:'+lastCol+'1');
-    add([cell(2,1,'My selected factors  •  Compare details, questions, and next steps',6)],24);merges.push('A2:'+lastCol+'2');
+    add([cell(2,1,'My selected factors  •  Hover over factor names for research tips',6)],24);merges.push('A2:'+lastCol+'2');
     add([],13);
     add([cell(4,1,'WHAT TO COMPARE',2),...state.programs.map((p,i)=>cell(4,i+2,p.name.trim()||'Program '+(i+1),2))],38);
     add([cell(5,1,'Program webpage',4),...state.programs.map((p,i)=>cell(5,i+2,p.url,5))],45);
@@ -484,6 +561,7 @@
       merges.push('A'+n+':'+lastCol+n);
       for(const item of group.items){
         const n=r;
+        noteCells.push({ref:'A'+n,row:n-1,tip:SOURCE_TIPS[item.id]||CUSTOM_SOURCE_TIP});
         add([cell(n,1,item.title,4),...state.programs.map((p,i)=>cell(n,i+2,state.values[valueKey(p.id,item.id)]||'',5))],65);
       }
     }
@@ -505,7 +583,24 @@
       '<printOptions horizontalCentered="1"/>'+
       '<pageMargins left="0.35" right="0.35" top="0.55" bottom="0.55" header="0.2" footer="0.2"/>'+
       '<pageSetup orientation="landscape" paperSize="9" fitToWidth="1" fitToHeight="0"/>'+
+      '<legacyDrawing xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="rId2"/>'+
       '</worksheet>';
+  }
+  function createCommentsXml(noteCells){
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+      '<comments xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
+      '<authors><author>Learning Hub</author></authors><commentList>'+
+      noteCells.map(note=>'<comment ref="'+note.ref+'" authorId="0"><text><t xml:space="preserve">'+xml('Where to look\n'+note.tip)+'</t></text></comment>').join('')+
+      '</commentList></comments>';
+  }
+  function createNotesVml(noteCells){
+    return '<?xml version="1.0" encoding="UTF-8"?>'+
+      '<xml xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">'+
+      '<v:shapetype id="_x0000_t202" coordsize="21600,21600" o:spt="202" path="m,l,21600r21600,l21600,xe"><v:stroke joinstyle="miter"/><v:path gradientshapeok="t" o:connecttype="none"/></v:shapetype>'+
+      noteCells.map((note,i)=>'<v:shape id="_x0000_s'+(1025+i)+'" type="#_x0000_t202" style="position:absolute;margin-left:59.25pt;margin-top:15pt;width:250pt;height:92pt;visibility:hidden;z-index:'+(i+1)+';" fillcolor="#ffffe1" o:insetmode="auto">'+
+        '<v:fill color2="#ffffe1"/><v:shadow on="t" color="black" obscured="t"/><v:path o:connecttype="none"/><v:textbox style="mso-direction-alt:auto"><div style="text-align:left"/></v:textbox>'+
+        '<x:ClientData ObjectType="Note"><x:MoveWithCells/><x:SizeWithCells/><x:Anchor>0, 15, '+note.row+', 2, 4, 15, '+(note.row+5)+', 2</x:Anchor><x:AutoFill>False</x:AutoFill><x:Row>'+note.row+'</x:Row><x:Column>0</x:Column></x:ClientData></v:shape>').join('')+
+      '</xml>';
   }
   const stylesXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
     '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
@@ -557,13 +652,17 @@
   }
   function exportXlsx(){
     if(!allSelected().length)return;
+    const noteCells=[],sheetXml=createWorkbookXml(noteCells);
     const files=[
-      ['[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>'],
+      ['[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="vml" ContentType="application/vnd.openxmlformats-officedocument.vmlDrawing"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/xl/comments1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml"/></Types>'],
       ['_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
       ['xl/workbook.xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Program comparison" sheetId="1" r:id="rId1"/></sheets><calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>'],
       ['xl/_rels/workbook.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'],
       ['xl/styles.xml',stylesXml],
-      ['xl/worksheets/sheet1.xml',createWorkbookXml()]
+      ['xl/worksheets/sheet1.xml',sheetXml],
+      ['xl/worksheets/_rels/sheet1.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments" Target="../comments1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/vmlDrawing" Target="../drawings/vmlDrawing1.vml"/></Relationships>'],
+      ['xl/comments1.xml',createCommentsXml(noteCells)],
+      ['xl/drawings/vmlDrawing1.vml',createNotesVml(noteCells)]
     ];
     const blob=zipEncode(files);
     const a=document.createElement('a'),url=URL.createObjectURL(blob);
