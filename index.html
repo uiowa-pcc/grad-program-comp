@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#151515">
-<meta name="description" content="Choose what matters to you and create an editable graduate program comparison spreadsheet.">
+<meta name="description" content="Choose what to compare and create an editable graduate program comparison spreadsheet.">
 <title>Graduate Program Comparison</title>
 <style>
   :root { --ink:#191919; --muted:#5c6067; --gold:#ffcd00; --line:#dfe2e6; --pale:#fff8dc; --panel:#fff; --blue:#edf4ff; --page:#f6f7f9; --radius:16px; font-family:Aptos, "Segoe UI", Arial, sans-serif; color:var(--ink); }
@@ -210,17 +210,17 @@
 <body>
 <main class="shell">
   <section class="intro" aria-labelledby="page-title">
-    <div><h1 id="page-title">Graduate Program Comparison</h1><p>Choose what's important to you, add programs you're interested in, and create an Excel comparison sheet.</p></div>
+    <div><h1 id="page-title">Graduate Program Comparison</h1><p>Select what to compare, add programs you're interested in, and create an Excel comparison sheet.</p></div>
     <div class="summary" aria-live="polite"><strong id="summary-count">7 factors</strong><span id="summary-programs">3 programs to compare</span></div>
   </section>
   <nav class="progress" aria-label="Comparison steps">
-    <button class="progress-part active" type="button" data-progress="0" aria-current="step">1 · Your priorities</button>
+    <button class="progress-part active" type="button" data-progress="0" aria-current="step">1 · What to compare</button>
     <button class="progress-part" type="button" data-progress="1">2 · Programs</button>
     <button class="progress-part" type="button" data-progress="2">3 · Comparison</button>
   </nav>
   <div class="pages" id="pages">
       <section class="card phase-page" id="phase-factors" data-phase="0" aria-labelledby="criteria-heading">
-        <div class="card-head"><div class="section-label"><span class="step">1</span><h2 id="criteria-heading">What matters to you?</h2></div><p class="small">Pick a few factors to research. Hover or tap the info icons to see where to look.</p></div>
+        <div class="card-head"><div class="section-label"><span class="step">1</span><h2 id="criteria-heading">Choose what to compare</h2></div><p class="small">Select the factors you want to research. Not every factor applies to every type of graduate program. Hover or tap the info icons for tips on where to find details.</p></div>
         <div class="choice-tools"><span class="count-chip" id="selected-count">7 selected</span><div><button class="link-button" id="suggested" type="button">Start with suggested</button><span aria-hidden="true" style="color:#a0a0a0;padding:0 7px;">·</span><button class="link-button" id="clear" type="button">Clear</button></div></div>
         <div id="criteria"></div>
         <div class="custom-wrap"><label for="custom-factor">Something else important to you?</label><div class="add-criterion"><input type="text" id="custom-factor" placeholder="Add your own comparison factor" maxlength="70"><button class="mini-button" id="add-factor" type="button">Add</button></div><div class="custom-list" id="custom-list" aria-live="polite"></div></div>
